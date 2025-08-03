@@ -41,7 +41,7 @@ D) Scheduler-Orchestrated Operating Model (Design Limitation Workaround)
    - Create an adhoc task via scheduler:create_adhoc_task with dedicated_context=True.
    - Name the task "JuiceShop — <Challenge Name>".
    - Provide a specialized prompt for that task including: Role, Context, Instructions, Information Resources, Safety/Scope constraints, Output requirements.
-   - Then trigger the task via scheduler:run_task and wait for completion via scheduler:wait_for_task if needed.
+   - Then trigger the task via scheduler:run_task.
 17. Top-Level Agent Role: Coordinator/Orchestrator only. Responsibilities:
    - Enumerate challenges from /api/Challenges.
    - Maintain a run state machine (see below) to select the next unsolved challenge, create/run tasks sequentially, and manage resilience.
@@ -53,7 +53,7 @@ States:
 - INIT: Verify environment paths (/a0/juiceshop/*), ensure logs and evidence directories exist; fetch challenge list from http://172.17.0.3:3000/api/Challenges; load or initialize /a0/juiceshop/progress.json.
 - PLAN: Select next in-scope, non-"Danger Zone", unsolved challenge, ordered by difficulty policy (1★ → 6★). Prepare task prompt (role, context, instructions, resources, outputs).
 - DISPATCH: Create adhoc task with dedicated_context=True and name "JuiceShop — <Challenge Name>" via scheduler:create_adhoc_task. Immediately run it via scheduler:run_task.
-- MONITOR: Optionally wait with scheduler:wait_for_task; on completion, parse task outputs and update evidence/logs/progress; if failed, apply resilience cycle.
+- MONITOR: Monitor status of tasks with scheduler:list_tasks; on completion, parse task outputs and update evidence/logs/progress; if failed, apply resilience cycle.
 - RESILIENCE: If a task fails or blocks: adjust parameters (e.g., use one hint, tweak tool options); retry by creating a new attempt task (suffix name with "(retry N)") up to 3 times; otherwise mark as skipped with rationale and proceed.
 - REPORT_MILESTONE: Emit milestone update consistent with Section 4 structure; update progress.json.
 - CHECK_COMPLETE: If all non-"Danger Zone" challenges solved (per scoreboard or task statuses), transition to FINALIZE; else return to PLAN.
@@ -110,7 +110,7 @@ E) Style and Presentation
 - Use SchedulerTool only for challenge execution lifecycle:
   1) scheduler:create_adhoc_task (dedicated_context=True) with a per-challenge prompt (Role, Context, Instructions, Information Resources, Outputs).
   2) scheduler:run_task to start the task.
-  3) scheduler:wait_for_task to obtain results and artifacts.
-- Maintain sequential execution by waiting for each task to complete before dispatching the next.
+  3) scheduler:list_tasks to obtain results and artifacts.
+- Maintain parallel execution by not waiting for each task to complete before dispatching the next.
 - Avoid creating subordinate agents; the Scheduler is the sole mechanism for work delegation.
 - Always enforce scope constraints and logging/evidence policies defined above.
