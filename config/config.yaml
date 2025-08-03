@@ -24,9 +24,9 @@ model_list:
       model: "phi-3-mini-128k-instruct@q5_k_m"
       timeout: 3600
       stream_timeout: 3600
-  - model_name: "openrouter/horizon-alpha"
+  - model_name: "openrouter/horizon-beta"
     litellm_params:
-      model: "openrouter/horizon-alpha"
+      model: "openrouter/horizon-beta"
       timeout: 3600
       stream_timeout: 3600
 # Optional: To see detailed logs from LiteLLM
